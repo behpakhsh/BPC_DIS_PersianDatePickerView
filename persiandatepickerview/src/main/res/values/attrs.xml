@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PersianDatePickerView">
+        <attr name="dpvBackground" format="reference|color" />
+        <attr name="dpvTextColor" format="reference|color" />
+        <attr name="dpvTextSize" format="dimension" />
+        <attr name="dpvTextStyle">
+            <flag name="normal" value="0" />
+            <flag name="bold" value="1" />
+            <flag name="italic" value="2" />
+            <flag name="bold_italic" value="3" />
+        </attr>
+    </declare-styleable>
+</resources>
