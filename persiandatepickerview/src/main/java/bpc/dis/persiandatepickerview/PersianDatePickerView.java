@@ -190,6 +190,17 @@ public class PersianDatePickerView extends FrameLayout {
         return jalaliCalendar.getGregorianDate(year + "/" + month + "/" + day);
     }
 
+    public void setSelectedDate(Date date) {
+        SolarCalendar solarCalendar = new SolarCalendar(date);
+        for (int i = 0; i < years.size(); i++) {
+            if (years.get(i).equals(String.valueOf(solarCalendar.year))) {
+                spYear.setSelection(i);
+                break;
+            }
+        }
+        spMonth.setSelection(solarCalendar.month - 1);
+        spDay.setSelection(solarCalendar.day - 1);
+    }
 
     private void setYear() {
         SolarCalendar solarCalendar = new SolarCalendar(startDate);
