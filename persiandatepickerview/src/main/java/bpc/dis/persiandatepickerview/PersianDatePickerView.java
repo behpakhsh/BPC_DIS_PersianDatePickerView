@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView;
@@ -39,6 +40,7 @@ public class PersianDatePickerView extends FrameLayout {
     private List<String> months;
     private List<String> days;
 
+    private boolean ignoreItemSelect = false;
     private boolean isLeapYear;
     private AdapterProperty adapterProperty;
     private SpinnerAdapter adapterDay;
@@ -77,6 +79,9 @@ public class PersianDatePickerView extends FrameLayout {
         spYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                if (ignoreItemSelect) {
+                    return;
+                }
                 isLeapYear = LeapYearHelper.checkLeapYear(Integer.parseInt(years.get(position)));
                 setDay(spMonth.getSelectedItemPosition() + 1);
             }
@@ -90,6 +95,9 @@ public class PersianDatePickerView extends FrameLayout {
         spMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                if (ignoreItemSelect) {
+                    return;
+                }
                 setDay(position + 1);
             }
 
@@ -191,6 +199,7 @@ public class PersianDatePickerView extends FrameLayout {
     }
 
     public void setSelectedDate(Date date) {
+        ignoreItemSelect = true;
         SolarCalendar solarCalendar = new SolarCalendar(date);
         for (int i = 0; i < years.size(); i++) {
             if (years.get(i).equals(String.valueOf(solarCalendar.year))) {
@@ -200,6 +209,12 @@ public class PersianDatePickerView extends FrameLayout {
         }
         spMonth.setSelection(solarCalendar.month - 1);
         spDay.setSelection(solarCalendar.day - 1);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ignoreItemSelect = false;
+            }
+        }, 1000);
     }
 
     private void setYear() {
