@@ -3,8 +3,9 @@
 
     <dimen name="persianDatePickerViewBorderRadius">3dp</dimen>
     <dimen name="persianDatePickerViewBorderSize">1dp</dimen>
-    <dimen name="persianDatePickerViewTextPadding">5dp</dimen>
+    <dimen name="persianDatePickerViewTextPaddingHeight">5dp</dimen>
+    <dimen name="persianDatePickerViewTextPaddingWidth">2dp</dimen>
     <dimen name="persianDatePickerViewMargin">5dp</dimen>
-    <dimen name="persianDatePickerViewTextSize">14sp</dimen>
+    <dimen name="persianDatePickerViewTextSize">12sp</dimen>
 
 </resources>
