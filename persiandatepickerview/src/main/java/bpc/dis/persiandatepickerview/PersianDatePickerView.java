@@ -235,8 +235,7 @@ public class PersianDatePickerView extends FrameLayout {
 
     private void setSelectedMonth(int month) {
         try {
-            if (days.size() > month) {
-                boolean lockListenerSpMonth = true;
+            if (months.size() > month) {
                 spMonth.setSelection(month - 1, true);
             }
         } catch (Exception e) {
