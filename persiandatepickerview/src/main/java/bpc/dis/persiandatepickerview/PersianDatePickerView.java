@@ -235,7 +235,7 @@ public class PersianDatePickerView extends FrameLayout {
 
     private void setSelectedMonth(int month) {
         try {
-            if (months.size() > month) {
+            if (months.size() >= month) {
                 spMonth.setSelection(month - 1, true);
             }
         } catch (Exception e) {
@@ -247,7 +247,7 @@ public class PersianDatePickerView extends FrameLayout {
         try {
             hasSelectedRequest = false;
             selectedSolarCalendar = null;
-            if (days.size() > day) {
+            if (days.size() >= day) {
                 spDay.setSelection(day - 1, true);
             }
         } catch (Exception e) {
