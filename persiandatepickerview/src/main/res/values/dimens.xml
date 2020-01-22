@@ -6,6 +6,6 @@
     <dimen name="persianDatePickerViewTextPaddingHeight">5dp</dimen>
     <dimen name="persianDatePickerViewTextPaddingWidth">2dp</dimen>
     <dimen name="persianDatePickerViewMargin">5dp</dimen>
-    <dimen name="persianDatePickerViewTextSize">12sp</dimen>
+    <dimen name="persianDatePickerViewTextSize">13sp</dimen>
 
 </resources>

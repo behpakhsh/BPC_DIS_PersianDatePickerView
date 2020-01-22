@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,12 +16,11 @@ import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import bpc.dis.dateutilities.JalaliCalendar.JalaliCalendar;
-import bpc.dis.dateutilities.LeapYearHelper.LeapYearHelper;
+import bpc.dis.dateutilities.PersianCalendarKernel;
 import bpc.dis.dateutilities.SolarCalendar.SolarCalendar;
 
 public class PersianDatePickerView extends FrameLayout {
@@ -40,12 +38,13 @@ public class PersianDatePickerView extends FrameLayout {
     private List<String> months;
     private List<String> days;
 
-    private boolean ignoreItemSelect = false;
-    private boolean isLeapYear;
     private AdapterProperty adapterProperty;
     private SpinnerAdapter adapterDay;
     private SpinnerAdapter adapterMonth;
     private SpinnerAdapter adapterYears;
+    private PersianCalendarKernel persianCalendarKernel;
+    private boolean hasSelectedRequest = false;
+    private SolarCalendar selectedSolarCalendar;
 
     public PersianDatePickerView(@NonNull Context context) {
         super(context);
@@ -79,33 +78,24 @@ public class PersianDatePickerView extends FrameLayout {
         spYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                if (ignoreItemSelect) {
-                    return;
-                }
-                isLeapYear = LeapYearHelper.checkLeapYear(Integer.parseInt(years.get(position)));
-                setDay(spMonth.getSelectedItemPosition() + 1);
+                setMonthByYear(Integer.valueOf(years.get(spYear.getSelectedItemPosition())));
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
-
         });
         spMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                if (ignoreItemSelect) {
-                    return;
-                }
-                setDay(position + 1);
+                setDayByYearAndMonth(Integer.valueOf(years.get(spYear.getSelectedItemPosition())), months.get(position));
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
-
         });
         setupView(context, attrs, defStyleAttr, defStyleRes);
     }
@@ -154,14 +144,6 @@ public class PersianDatePickerView extends FrameLayout {
     }
 
 
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
     public void setBackgroundResource(int backgroundRes) {
         clYear.setBackgroundResource(backgroundRes);
         clMonth.setBackgroundResource(backgroundRes);
@@ -185,9 +167,17 @@ public class PersianDatePickerView extends FrameLayout {
         adapterProperty.setTextColor(textColor);
     }
 
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
     public void initDate() {
+        persianCalendarKernel = new PersianCalendarKernel(getContext(), startDate, endDate);
         setYear();
-        setMonth();
     }
 
     public Date getSelectedDate() {
@@ -199,57 +189,71 @@ public class PersianDatePickerView extends FrameLayout {
     }
 
     public void setSelectedDate(Date date) {
-        ignoreItemSelect = true;
-        SolarCalendar solarCalendar = new SolarCalendar(date);
-        for (int i = 0; i < years.size(); i++) {
-            if (years.get(i).equals(String.valueOf(solarCalendar.year))) {
-                spYear.setSelection(i);
-                break;
-            }
-        }
-        spMonth.setSelection(solarCalendar.month - 1);
-        spDay.setSelection(solarCalendar.day - 1);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ignoreItemSelect = false;
-            }
-        }, 1000);
+        hasSelectedRequest = true;
+        selectedSolarCalendar = new SolarCalendar(date);
+        setSelectedYear(selectedSolarCalendar.year);
     }
 
+
     private void setYear() {
-        SolarCalendar solarCalendar = new SolarCalendar(startDate);
-        int startYear = solarCalendar.year;
-        solarCalendar = new SolarCalendar(endDate);
-        int endYear = solarCalendar.year;
-        for (int i = startYear; i <= endYear; i++) {
-            years.add(String.valueOf(i));
-        }
+        years.clear();
+        years.addAll(persianCalendarKernel.getYears());
         adapterYears.notifyDataSetChanged();
     }
 
-    private void setMonth() {
-        months.addAll(Arrays.asList(getResources().getStringArray(R.array.month)).subList(0, 12));
+    private void setMonthByYear(int year) {
+        months.clear();
+        months.addAll(persianCalendarKernel.getMonthsByYear(year));
         adapterMonth.notifyDataSetChanged();
+        if (hasSelectedRequest) {
+            setSelectedMonth(selectedSolarCalendar.month);
+        }
     }
 
-    private void setDay(int month) {
-        int end = 31;
-        if (month > 6) {
-            if (!isLeapYear) {
-                if (month == 12)
-                    end = 29;
-                else
-                    end = 30;
-            } else {
-                end = 30;
-            }
-        }
+    private void setDayByYearAndMonth(int year, String stringMonth) {
         days.clear();
-        for (int i = 1; i <= end; i++) {
-            days.add(String.valueOf(i));
-        }
+        days.addAll(persianCalendarKernel.getDaysByMonth(year, stringMonth));
         adapterDay.notifyDataSetChanged();
+        if (hasSelectedRequest) {
+            setSelectedDay(selectedSolarCalendar.day);
+        }
+    }
+
+
+    private void setSelectedYear(int year) {
+        try {
+            for (int i = 0; i < years.size(); i++) {
+                if (Integer.valueOf(years.get(i)) == year) {
+                    spYear.setSelection(i, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setSelectedMonth(int month) {
+        try {
+            if (days.size() > month) {
+                boolean lockListenerSpMonth = true;
+                spMonth.setSelection(month - 1, true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setSelectedDay(int day) {
+        try {
+            hasSelectedRequest = false;
+            selectedSolarCalendar = null;
+            if (days.size() > day) {
+                spDay.setSelection(day - 1, true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
