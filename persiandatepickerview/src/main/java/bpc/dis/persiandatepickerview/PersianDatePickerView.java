@@ -181,8 +181,8 @@ public class PersianDatePickerView extends FrameLayout {
     }
 
     public Date getSelectedDate() {
-        String day = String.valueOf(spDay.getSelectedItemPosition() + 1);
-        String month = String.valueOf(spMonth.getSelectedItemPosition() + 1);
+        String day = days.get(spDay.getSelectedItemPosition());
+        int month = persianCalendarKernel.getMonthsNumberByMonthString(months.get(spMonth.getSelectedItemPosition()));
         String year = years.get(spYear.getSelectedItemPosition());
         JalaliCalendar jalaliCalendar = new JalaliCalendar();
         return jalaliCalendar.getGregorianDate(year + "/" + month + "/" + day);
